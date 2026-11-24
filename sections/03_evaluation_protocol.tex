@@ -1,0 +1,11 @@
+\section{Evaluation protocol}
+\label{sec:protocol}
+\paragraph{Cases and systems.}
+Four explainers each supplied two annotated briefs. The development and held-out splits contain two disjoint sources and four briefs each. The test set covers 30-second vertical explanations and 45-second horizontal recaps, both with English subtitles. Each brief specifies fact units and source reference intervals. B0 takes the opening source window, B1 makes one transcript-based planning call without semantic repair, and B2 runs the full evidence, planning and review workflow. Systems share source preparation and rendering. Applicable duration adjustment is deterministic. We retain the first complete run for each system and brief, including failure cases. The configured text and vision model alias is \texttt{deepseek-flash}. There was no model training or fine-tuning.
+
+\paragraph{Strict scoring.}
+The checklist requires all essential facts, faithfulness to the source, no serious cut defect, acceptable subtitles, and correct duration and aspect ratio. Overall strict pass requires all five checks. Two renders failed and remain in the denominator. Gao and Zhang scored the same ten anonymous rendered clips. We preserve each original overall-usable checkbox as a separate measure. When human strict judgments differ, we report the range from confirmed passes to confirmed plus disputed passes.
+
+\paragraph{AI scoring.}
+Codex used a fresh faster-whisper transcription of each rendered audio track, sampled frames about every three seconds including the ending, and decoded file measurements. The AI criterion labels and time-coded evidence accompany the submission. The AI had access to parts of the humans' forms and mapping. The AI check is separate and was not strictly blinded. Sampled frames and automatically transcribed speech cannot establish every subtitle cue or speech boundary. AI labels are kept separate from the human decisions.
+

@@ -1,0 +1,42 @@
+\section{Results}
+\label{sec:results}
+\begin{table}[htbp]
+\centering
+\caption{Frozen runs. Each split contains four assigned briefs per system. Elapsed time is summed after shared asset preparation. Attempts include retries.}
+\label{tab:execution}
+\begin{tabular}{llrrrr}
+\toprule
+Split & System & Rendered & Failed & Time (s) & Model attempts \\
+\midrule
+Development & B0 & 4/4 & 0 & 15.52 & 0 \\
+Development & B1 & 0/4 & 4 & 17.42 & 4 \\
+Development & B2 & 3/4 & 1 & 300.53 & 85 \\
+Test & B0 & 4/4 & 0 & 17.02 & 0 \\
+Test & B1 & 2/4 & 2 & 28.48 & 4 \\
+Test & B2 & 4/4 & 0 & 268.20 & 81 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:execution} shows that B2 completed two more held-out runs than B1 and matched B0's render count. Mean test time per assigned brief was 4.25 seconds for B0, 7.12 for B1, and 67.05 for B2, measured after source preparation and including failed runs. The formal-study usage estimate was USD 0.335423 at the assumed peak uncached rates. The spend guard recorded a USD 2.031448 reservation. Actual provider billing is unconfirmed, and pilot and dialogue work are excluded from the estimate. The AI scoring pass made no paid endpoint calls.
+
+\begin{table}[htbp]
+\centering
+\caption{Held-out judgments. Strict outcomes use the five criteria jointly. Human bounds include unresolved cases at the upper bound. Stated usability reproduces the original human checkboxes.}
+\label{tab:human-ai}
+\begin{tabular}{lccccc}
+\toprule
+System & Gao strict & Zhang strict & Human bounds & AI strict & Gao/Zhang usable \\
+\midrule
+B0 & 0/4 & 0/4 & 0/4 & 0/4 & 0/4, 0/4 \\
+B1 & 1/4 & 1/4 & 1/4 & 0/4 & 2/4, 2/4 \\
+B2 & 3/4 & 1/4 & 1/4--3/4 & 1/4 & 4/4, 3/4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:human-ai} reports semantic and editorial quality separately from rendering. Human strict agreement was 8/10 among the renders (Cohen's $\kappa=0.55$). AI agreed with Gao on 7/10 and with Zhang on 9/10. Several clips share the same source, so these are descriptive measures.
+
+\paragraph{Worked cases.}
+Clip 03 passed all three checklists. It covered data retrieval, request and response, websites for humans versus APIs for programs, and data endpoint URLs. Clip 05 joined an unfinished suffix-truncation phrase to row versions near 34--37 seconds. Clip 11 retained the restaurant analogy and API definition but had broken joins and a truncated ending. Both remain disputed in the human strict results. Both humans passed clip 09. The AI found a missing endpoint explanation and discontinuities near 10 and 20 seconds. Its EDL contains no source interval past 185.954 seconds, while the annotated endpoint span begins at 194 seconds. A B1 case proposed 47.36 seconds for a 30-second request and stopped at validation. B2 produced a 30.10-second render for that brief, and both humans flagged serious cuts. In a separate development interaction the real model updated an imported plan to a 19.6-second vertical EDL against a 20-second request, retained subtitles and both versions, and used 22 model attempts.
+

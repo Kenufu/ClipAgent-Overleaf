@@ -39,173 +39,19 @@ and Verified Tool Execution}
 \begin{document}
 \maketitle
 
-\begin{abstract}
-ClipAgent turns a spoken English video and a natural-language brief into a short, source-linked edit. The system retrieves timed evidence, plans clips through structured tools, checks the plan, and uses FFmpeg to render an MP4 with optional subtitles. A dialogue interface supports follow-up edits while preserving prior versions. We ran 24 executions over eight briefs with an opening-window baseline, a single-call planning baseline, and the full agent. On four held-out briefs the systems rendered 4, 2, and 4 videos, respectively. Under a five-criterion rubric the full agent passed both human checklists on one brief, with two further human disagreements. A separate AI assessment passed one full-agent brief. These results show a functional editing loop and locate cut continuity and fact coverage as remaining bottlenecks. The held-out set covers two English explainer sources.
-\end{abstract}
+\input{sections/00_abstract}%
+\input{sections/01_introduction}%
+\input{sections/02_system_design}%
+\input{sections/03_evaluation_protocol}%
+\input{sections/04_results}%
+\input{sections/05_limitations_and_impacts}%
+\input{sections/06_contributions_and_ai}%
+\input{sections/references}%
 
-\section{Introduction}
-\label{sec:intro}
-Students and knowledge-content editors often know what a short clip should explain but still have to locate useful moments, assemble them, and inspect the export. ClipAgent accepts one video and one brief and returns a playable MP4, optional subtitles, and a source-linked edit decision list (EDL). A follow-up can revise the duration, aspect ratio, or requested content. Each version retains its plan and earlier downloads. Related systems informed the dialogue flow, evidence retrieval, and review stages \citep{cliptalk,videoagent,videouse,openmontage}.
-
-The proposal called for evidence retrieval, stateful planning, and verified execution. The prototype delivers those functions for one source. The study retained four received third-party English explainers from an original plan for 32 self-recorded concept explanations and software demonstrations. This makes source-separated review feasible within the course schedule and limits the evaluation to spoken explainers. We deferred multi-source editing, hybrid vector retrieval, word-level alignment, distributed execution, and enterprise authorization.
-
-\section{System design}
-\label{sec:system}
-
-\paragraph{Architecture overview.}
-Figure~\ref{fig:architecture} separates the client interface, local orchestration and editing core, remote model boundary, and persistent media and revision state. The browser submits briefs and follow-up requests through FastAPI; the editing workflow builds a source-linked plan, while the local media pipeline validates and renders it. Model calls are budgeted separately from deterministic media operations. Optional interfaces and the RSI extension are distinguished from the B2 path used in the recorded comparison.
-
-\begin{figure}[htbp]
-\centering
-% Keep supplied raster artwork intact. Crop the embedded heading and use
-% LaTeX overlays to correct terminology without repainting the source asset.
-\begingroup%
-\setlength{\unitlength}{\dimexpr\linewidth/1376\relax}%
-\begin{picture}(1376,690)%
-\put(0,0){\includegraphics[width=\linewidth,trim=0 0 0 78,clip]{figures/architecture-original.jpeg}}%
-\put(807,449){\color{diagramcream}\rule{310\unitlength}{64\unitlength}}%
-\put(807,449){\makebox(310,64){\sffamily\fontsize{6.2}{7.4}\selectfont\shortstack{Model API: $\leq 24$ attempts/task\\$\leq 3$ attempts/call (incl. retries)}}}%
-\put(1157,430){\color{diagramcream}\rule{199\unitlength}{75\unitlength}}%
-\put(1157,430){\makebox(199,75){\sffamily\fontsize{6.0}{7.2}\selectfont\shortstack{Assets, transcripts,\\dialogue, EDL versions,\\jobs and traces}}}%
-\end{picture}%
-\endgroup%
-\caption{ClipAgent system architecture. The local application coordinates dialogue and the shared B2 editing core; remote model calls cross an explicit API boundary, while rendering and media checks run locally. SQLite retains revision and task state. The optional MCP interface and disabled-by-default RSI extension are outside the evaluated B2 configuration. The guard permits at most 24 model HTTP attempts per foreground task and three attempts per call, including retries.}
-\label{fig:architecture}
-\end{figure}
-\paragraph{Preparation and evidence retrieval.}
-FastAPI starts and polls asynchronous tasks. Local faster-whisper base \citep{fasterwhisper} transcribes speech with timestamps. BM25 retrieves related transcript spans. An analysis role in LangGraph can read source intervals and inspect sampled frames when the brief requires visual evidence. Local audio processing reduces data sent to remote services. The configured planning and vision endpoints can receive the brief, transcript evidence and sampled frames.
-
-\paragraph{Planning, review, and execution.}
-The planning role combines the brief, prior edit, conversation state and tool observations to choose source intervals, order, duration, aspect ratio and subtitle settings. A separate reviewer checks the EDL and can request one repair with a concrete issue. Pydantic schemas and deterministic validators check source bounds, overlap and format constraints. FFmpeg \citep{ffmpeg} executes a validated EDL and checks decoded media, duration, dimensions and subtitle availability. The task record preserves source timecodes and evidence identifiers. Prompts and tool schemas are in \path{app/services/editing_agent.py}, orchestration in \path{app/graph/editing.py}, and rendering in \path{app/services/renderer.py}.
-
-
-Figure~\ref{fig:workflow} details the editing loop within this architecture. Evidence acquisition supplies timed speech and, when needed, sampled frames. The planner proposes an EDL and the independent reviewer can request at most one semantic repair. A reviewed plan must still pass deterministic validation before FFmpeg renders it; media QA then checks the output. Persisted revision context supports subsequent edits, and approval remains bound to the selected revision rather than to the conversation as a whole.
-
-\begin{figure}[htbp]
-\centering
-% Remove the artwork's baked-in "Figure 1" heading; numbering belongs to LaTeX.
-\includegraphics[width=0.88\linewidth,trim=0 0 0 39,clip]{figures/workflow-original.png}
-\caption{Evidence-grounded editing workflow. (a) Timed transcript retrieval and on-demand frames ground the brief. (b) The planner selects and orders source spans; an independent reviewer checks the proposal and may request one repair. (c) Deterministic validation, FFmpeg rendering and media QA produce the MP4 and source-linked EDL, with optional captions. (d) SQLite stores dialogue, drafts and versions, providing revision context for follow-up requests.}
-\label{fig:workflow}
-\end{figure}
-\FloatBarrier
-
-\paragraph{State and recovery.}
-An explicit requirement overrides prior revision settings and confirmed aspect-ratio or subtitle defaults. SQLite stores drafts, dialogue, tasks and versions. Approval binds to a revision and can reuse a completed render. The isolated restart test restored drafts and downloads, rejected stale approval with HTTP 409, and marked an injected queued task interrupted with a structured error. A missing asset returned HTTP 404. Each foreground task limits model HTTP attempts to 24 across all roles and vision, with at most three attempts per call. Retries count toward this budget because repeated requests can incur additional charges. The UI reports exhausted budgets and failed tasks.
-
-\paragraph{Optional strategy adaptation.}
-The RSI module records eligible feedback in a separate database and proposes structured strategy candidates with bounded background work. Offline evaluation and manual activation control which strategies may enter eligible planning prompts. Model weights, tool permissions and validators remain fixed. RSI defaults off and is disabled by the comparison runner. The recorded study predates this module. Automated tests exercise activation, isolation, fallback, and budget exhaustion.
-
-\FloatBarrier
-\section{Evaluation protocol}
-\label{sec:protocol}
-\paragraph{Cases and systems.}
-Four explainers each supplied two annotated briefs. The development and held-out splits contain two disjoint sources and four briefs each. The test set covers 30-second vertical explanations and 45-second horizontal recaps, both with English subtitles. Each brief specifies fact units and source reference intervals. B0 takes the opening source window, B1 makes one transcript-based planning call without semantic repair, and B2 runs the full evidence, planning and review workflow. Systems share source preparation and rendering. Applicable duration adjustment is deterministic. We retain the first complete run for each system and brief, including failure cases. The configured text and vision model alias is \texttt{deepseek-flash}. There was no model training or fine-tuning.
-
-\paragraph{Strict scoring.}
-The checklist requires all essential facts, faithfulness to the source, no serious cut defect, acceptable subtitles, and correct duration and aspect ratio. Overall strict pass requires all five checks. Two renders failed and remain in the denominator. Gao and Zhang scored the same ten anonymous rendered clips. We preserve each original overall-usable checkbox as a separate measure. When human strict judgments differ, we report the range from confirmed passes to confirmed plus disputed passes.
-
-\paragraph{AI scoring.}
-Codex used a fresh faster-whisper transcription of each rendered audio track, sampled frames about every three seconds including the ending, and decoded file measurements. The AI criterion labels and time-coded evidence accompany the submission. The AI had access to parts of the humans' forms and mapping. The AI check is separate and was not strictly blinded. Sampled frames and automatically transcribed speech cannot establish every subtitle cue or speech boundary. AI labels are kept separate from the human decisions.
-
-\section{Results}
-\label{sec:results}
-\begin{table}[htbp]
-\centering
-\caption{Frozen runs. Each split contains four assigned briefs per system. Elapsed time is summed after shared asset preparation. Attempts include retries.}
-\label{tab:execution}
-\begin{tabular}{llrrrr}
-\toprule
-Split & System & Rendered & Failed & Time (s) & Model attempts \\
-\midrule
-Development & B0 & 4/4 & 0 & 15.52 & 0 \\
-Development & B1 & 0/4 & 4 & 17.42 & 4 \\
-Development & B2 & 3/4 & 1 & 300.53 & 85 \\
-Test & B0 & 4/4 & 0 & 17.02 & 0 \\
-Test & B1 & 2/4 & 2 & 28.48 & 4 \\
-Test & B2 & 4/4 & 0 & 268.20 & 81 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Table~\ref{tab:execution} shows that B2 completed two more held-out runs than B1 and matched B0's render count. Mean test time per assigned brief was 4.25 seconds for B0, 7.12 for B1, and 67.05 for B2, measured after source preparation and including failed runs. The formal-study usage estimate was USD 0.335423 at the assumed peak uncached rates. The spend guard recorded a USD 2.031448 reservation. Actual provider billing is unconfirmed, and pilot and dialogue work are excluded from the estimate. The AI scoring pass made no paid endpoint calls.
-
-\begin{table}[htbp]
-\centering
-\caption{Held-out judgments. Strict outcomes use the five criteria jointly. Human bounds include unresolved cases at the upper bound. Stated usability reproduces the original human checkboxes.}
-\label{tab:human-ai}
-\begin{tabular}{lccccc}
-\toprule
-System & Gao strict & Zhang strict & Human bounds & AI strict & Gao/Zhang usable \\
-\midrule
-B0 & 0/4 & 0/4 & 0/4 & 0/4 & 0/4, 0/4 \\
-B1 & 1/4 & 1/4 & 1/4 & 0/4 & 2/4, 2/4 \\
-B2 & 3/4 & 1/4 & 1/4--3/4 & 1/4 & 4/4, 3/4 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Table~\ref{tab:human-ai} reports semantic and editorial quality separately from rendering. Human strict agreement was 8/10 among the renders (Cohen's $\kappa=0.55$). AI agreed with Gao on 7/10 and with Zhang on 9/10. Several clips share the same source, so these are descriptive measures.
-
-\paragraph{Worked cases.}
-Clip 03 passed all three checklists. It covered data retrieval, request and response, websites for humans versus APIs for programs, and data endpoint URLs. Clip 05 joined an unfinished suffix-truncation phrase to row versions near 34--37 seconds. Clip 11 retained the restaurant analogy and API definition but had broken joins and a truncated ending. Both remain disputed in the human strict results. Both humans passed clip 09. The AI found a missing endpoint explanation and discontinuities near 10 and 20 seconds. Its EDL contains no source interval past 185.954 seconds, while the annotated endpoint span begins at 194 seconds. A B1 case proposed 47.36 seconds for a 30-second request and stopped at validation. B2 produced a 30.10-second render for that brief, and both humans flagged serious cuts. In a separate development interaction the real model updated an imported plan to a 19.6-second vertical EDL against a 20-second request, retained subtitles and both versions, and used 22 model attempts.
-
-\section{Limitations and broader impacts}
-\label{sec:limitations}
-Two held-out sources and one execution per brief do not support generalization or statistical significance claims. Sparse frame observations, ASR errors, and subjectivity about cuts and captions all affect judgments. The record separates exact original results from portable replay instructions because provider aliases can change and the project used third-party material. The distribution includes a generated sample, while the source access notes record four hashes and current gaps in third-party attribution and reuse.
-
-Evidence-linked editing can reduce manual search and help educators review clips before sharing. An ill-placed cut can distort meaning or conceal context. Transcripts and visual frames may expose sensitive content to configured services. Traceable intervals, version-specific review, bounded calls, and avoiding credential and source dumps reduce those risks in the prototype.
-
-\section{Contributions and AI disclosure}
-\label{sec:disclosure}
-Gao Xuefei was the proposal contact and completed independent held-out scoring. Wang Ling coordinated model-service setup and submission. Zhang Yiqun supplied and annotated materials and completed independent held-out scoring. Fu Xuanyu reviewed the reference briefs and intervals. The optional RSI contribution is credited to GitHub author \texttt{phi1220}. The supplied records do not identify which course member owns that account.
-
-The application configures a language model for analysis, planning, and review. Codex assisted with implementation, verification, writing, figure integration and AI assessment. The architecture illustration was supplied as a Gemini-generated image; the workflow illustration was also supplied for this report. Both are explanatory diagrams rather than experimental evidence. Available prompts and omissions are documented in \path{AI_USE.md} and \path{AI_PROMPTS/}. The runnable submission snapshot is \href{https://github.com/Ling-w811/VedioClipAgent/commit/8f5546ec079fd0ee3e90eca954b39178f124f32b}{\texttt{8f5546e}}. The historical study predates the packaging fixes and has separate code and data hashes in \path{evaluation/evidence/freeze.json}.
-
-\begin{thebibliography}{6}
-\bibitem{cliptalk} GML-MMGroup. \emph{ClipTalk}. Project repository. \url{https://github.com/GML-MMGroup/ClipTalk}.
-\bibitem{videoagent} HKUDS. \emph{VideoAgent}. Project repository. \url{https://github.com/HKUDS/VideoAgent}.
-\bibitem{videouse} Browser Use. \emph{video-use}. Project repository. \url{https://github.com/browser-use/video-use}.
-\bibitem{openmontage} Calesthio. \emph{OpenMontage}. Project repository. \url{https://github.com/calesthio/OpenMontage}.
-\bibitem{fasterwhisper} SYSTRAN. \emph{faster-whisper}. Project repository. \url{https://github.com/SYSTRAN/faster-whisper}.
-\bibitem{ffmpeg} FFmpeg Project. \emph{FFmpeg Documentation}. \url{https://ffmpeg.org/documentation.html}.
-\end{thebibliography}
 
 \clearpage
 \appendix
-\section{Item-level decisions and reproducibility}
-\label{sec:appendix}
-
-\begin{table}[htbp]
-\centering
-\caption{The twelve held-out system--brief pairs. Failed executions remain in the overall counts.}
-\label{tab:cases}
-\begin{tabular}{llccccc}
-\toprule
-Clip & System & Rendered & Gao strict & Zhang strict & AI strict & Human result \\
-\midrule
-01 & B0 & Yes & Fail & Fail & Fail & Fail \\
-02 & B2 & Yes & Fail & Fail & Fail & Fail \\
-03 & B2 & Yes & Pass & Pass & Pass & Pass \\
-04 & B1 & No & Fail & Fail & Fail & Fail \\
-05 & B2 & Yes & Pass & Fail & Fail & Disputed \\
-06 & B1 & Yes & Fail & Fail & Fail & Fail \\
-07 & B0 & Yes & Fail & Fail & Fail & Fail \\
-08 & B0 & Yes & Fail & Fail & Fail & Fail \\
-09 & B1 & Yes & Pass & Pass & Fail & Pass \\
-10 & B0 & Yes & Fail & Fail & Fail & Fail \\
-11 & B2 & Yes & Pass & Fail & Fail & Disputed \\
-12 & B1 & No & Fail & Fail & Fail & Fail \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Trace pointers.}
-Clip 03 corresponds to \texttt{test\_explain\_02\_B} in B2. The EDL trace under \path{evaluation/evidence/test_b2/traces/} records \texttt{read\_video\_content}, \texttt{inspect\_frames}, \texttt{submit\_edit}, and \texttt{submit\_review}. Its span from 198.72 to 210.98 seconds supplies endpoint evidence. The planner, tool definitions and reviewer are connected in \path{app/graph/editing.py}. The failed B1 case \texttt{test\_explain\_01\_A} is in \path{evaluation/evidence/test_b1/results.jsonl}. The restart and missing-source checks have separate verification records.
-
-\paragraph{Package replay.}
-The source ZIP includes a standalone browser app, a Windows Python 3.11 lock, generated Nova Cloud source video and prepared captions, a runnable offline B0 case, ordinary/revision/failure requests, and scripts to recompute the recorded scores. The preset has synthetic video with prepared captions. Unit tests can use model stubs. The README run commands exercise these paths without paid credentials. The exact historical videos require approved access through the course-group contact. A historical model rerun also needs a compatible provider credential and an API budget.
-
+\input{sections/07_appendix_reproducibility}%
 \clearpage
 \input{checklist}
 \end{document}

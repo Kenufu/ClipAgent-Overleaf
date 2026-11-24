@@ -1,0 +1,33 @@
+\section{Item-level decisions and reproducibility}
+\label{sec:appendix}
+
+\begin{table}[htbp]
+\centering
+\caption{The twelve held-out system--brief pairs. Failed executions remain in the overall counts.}
+\label{tab:cases}
+\begin{tabular}{llccccc}
+\toprule
+Clip & System & Rendered & Gao strict & Zhang strict & AI strict & Human result \\
+\midrule
+01 & B0 & Yes & Fail & Fail & Fail & Fail \\
+02 & B2 & Yes & Fail & Fail & Fail & Fail \\
+03 & B2 & Yes & Pass & Pass & Pass & Pass \\
+04 & B1 & No & Fail & Fail & Fail & Fail \\
+05 & B2 & Yes & Pass & Fail & Fail & Disputed \\
+06 & B1 & Yes & Fail & Fail & Fail & Fail \\
+07 & B0 & Yes & Fail & Fail & Fail & Fail \\
+08 & B0 & Yes & Fail & Fail & Fail & Fail \\
+09 & B1 & Yes & Pass & Pass & Fail & Pass \\
+10 & B0 & Yes & Fail & Fail & Fail & Fail \\
+11 & B2 & Yes & Pass & Fail & Fail & Disputed \\
+12 & B1 & No & Fail & Fail & Fail & Fail \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Trace pointers.}
+Clip 03 corresponds to \texttt{test\_explain\_02\_B} in B2. The EDL trace under \path{evaluation/evidence/test_b2/traces/} records \texttt{read\_video\_content}, \texttt{inspect\_frames}, \texttt{submit\_edit}, and \texttt{submit\_review}. Its span from 198.72 to 210.98 seconds supplies endpoint evidence. The planner, tool definitions and reviewer are connected in \path{app/graph/editing.py}. The failed B1 case \texttt{test\_explain\_01\_A} is in \path{evaluation/evidence/test_b1/results.jsonl}. The restart and missing-source checks have separate verification records.
+
+\paragraph{Package replay.}
+The source ZIP includes a standalone browser app, a Windows Python 3.11 lock, generated Nova Cloud source video and prepared captions, a runnable offline B0 case, ordinary/revision/failure requests, and scripts to recompute the recorded scores. The preset has synthetic video with prepared captions. Unit tests can use model stubs. The README run commands exercise these paths without paid credentials. The exact historical videos require approved access through the course-group contact. A historical model rerun also needs a compatible provider credential and an API budget.
+
