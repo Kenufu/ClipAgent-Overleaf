@@ -40,3 +40,26 @@ Table~\ref{tab:human-ai} reports semantic and editorial quality separately from 
 \paragraph{Worked cases.}
 Clip 03 passed all three checklists. It covered data retrieval, request and response, websites for humans versus APIs for programs, and data endpoint URLs. Clip 05 joined an unfinished suffix-truncation phrase to row versions near 34--37 seconds. Clip 11 retained the restaurant analogy and API definition but had broken joins and a truncated ending. Both remain disputed in the human strict results. Both humans passed clip 09. The AI found a missing endpoint explanation and discontinuities near 10 and 20 seconds. Its EDL contains no source interval past 185.954 seconds, while the annotated endpoint span begins at 194 seconds. A B1 case proposed 47.36 seconds for a 30-second request and stopped at validation. B2 produced a 30.10-second render for that brief, and both humans flagged serious cuts. In a separate development interaction the real model updated an imported plan to a 19.6-second vertical EDL against a 20-second request, retained subtitles and both versions, and used 22 model attempts.
 
+\subsection{Spreadsheet interaction and recovery}
+\label{sec:spreadsheet}
+The first export retained the goal, formula entry and result. The first revision attempt failed without an export. A retry returned a vertical clip in which the result remained visible for 6.97 s, exceeding the three-second requirement. Both versions remained downloadable and matched the originally saved bytes. The successful creation and retry recorded eight and six frame-inspection actions, respectively. Local audio checks found an abrupt join near 4 s in the first clip and an incomplete final spoken line in the revision, despite available English SRT files.
+
+\begin{table}[htbp]
+\centering
+\caption{Supplementary test on the synthetic spreadsheet clip. The result hold is time measured from decoded frames. A dash denotes no export.}
+\label{tab:spreadsheet}
+\begin{tabular}{lrrr}
+\toprule
+Attempt & Output (s) & Result hold (s) & Model attempts \\
+\midrule
+30 s horizontal creation & 30.07 & 6.03 & 24 \\
+20 s vertical revision & --- & --- & 18 \\
+20 s vertical retry & 19.60 & 6.97 & 19 \\
+2 s clip with 5 s hold & --- & --- & 13 \\
+8 s recovery with 5 s hold & 8.04 & 5.00 & 15 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:spreadsheet} records all five submissions. The backend explicitly flagged the two-second request as incompatible with a five-second hold and produced no export. When the user increased the requested duration to eight seconds, the system exported a vertical clip with B5 = 240 continuously visible from 3.033 to 8.033 s. These observations show that the system retained the visual evidence and recovered after the user relaxed a conflicting constraint.
+
