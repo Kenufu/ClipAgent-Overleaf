@@ -70,3 +70,23 @@ Attempt & Output (s) & Result hold (s) & Model attempts \\
 
 Table~\ref{tab:spreadsheet} records all five submissions. The backend explicitly flagged the two-second request as incompatible with a five-second hold and produced no export. When the user increased the requested duration to eight seconds, the system exported a vertical clip with B5 = 240 continuously visible from 3.033 to 8.033 s. These observations show that the system retained the visual evidence and recovered after the user relaxed a conflicting constraint.
 
+
+\subsection{Self-evolution diagnostic}
+The 36-run diagnostic covered six tasks across three scenarios: search with a specified trim, recovery from a tool failure, and single-parameter revisions. Each group repeated each task three times. The baseline passed 15/18 runs (83.3\%); the self-evolution group passed 17/18 (94.4\%), a gain of 11.1 percentage points. Both groups used the same tools and call limit with a frozen policy. The source package includes the task suite, policy, scripts and records. The historical diagnostic used qwen3.8-flash and is separate from the B0/B1/B2 comparison.
+
+\begin{table}[htbp]
+\centering
+\renewcommand{\thetable}{3a}
+\caption{Self-evolution diagnostic results.}
+\label{tab:evolution}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrr}
+\toprule
+System & Passed / runs & Success rate \\
+\midrule
+Baseline & 15 / 18 & 83.3\% \\
+Self-evolution & 17 / 18 & 94.4\% \\
+\bottomrule
+\end{tabular*}
+\end{table}
+\addtocounter{table}{-1}
+
