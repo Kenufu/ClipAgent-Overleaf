@@ -33,7 +33,7 @@ Figure~\ref{fig:workflow} details the editing loop within this architecture. Evi
 \begin{figure}[htbp]
 \centering
 % Remove the artwork's baked-in "Figure 1" heading; numbering belongs to LaTeX.
-\includegraphics[width=0.88\linewidth,trim=0 0 0 39,clip]{figures/workflow-original.png}
+\includegraphics[width=\linewidth,trim=0 0 0 39,clip]{figures/workflow-original.png}
 \caption{Evidence-grounded editing workflow. (a) Timed transcript retrieval and on-demand frames ground the brief. (b) The planner selects and orders source spans; an independent reviewer checks the proposal and may request one repair. (c) Deterministic validation, FFmpeg rendering and media QA produce the MP4 and source-linked EDL, with optional captions. (d) SQLite stores dialogue, drafts and versions, providing revision context for follow-up requests.}
 \label{fig:workflow}
 \end{figure}

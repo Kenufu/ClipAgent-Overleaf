@@ -1,10 +1,14 @@
 \section{Results}
 \label{sec:results}
+We first report the frozen comparison of B0, B1 and B2, then describe the supplementary spreadsheet interaction and recovery test.
+
+\subsection{Frozen-run evaluation}
+\label{sec:frozen-results}
 \begin{table}[htbp]
 \centering
-\caption{Frozen runs. Each split contains four assigned briefs per system. Elapsed time is summed after shared asset preparation. Attempts include retries.}
+\caption{Execution outcomes on frozen development and test runs.}
 \label{tab:execution}
-\begin{tabular}{llrrrr}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}llrrrr}
 \toprule
 Split & System & Rendered & Failed & Time (s) & Model attempts \\
 \midrule
@@ -15,16 +19,17 @@ Test & B0 & 4/4 & 0 & 17.02 & 0 \\
 Test & B1 & 2/4 & 2 & 28.48 & 4 \\
 Test & B2 & 4/4 & 0 & 268.20 & 81 \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
+\tablenote{Each split contains four assigned briefs per system. Elapsed time is summed after shared asset preparation. Model attempts include retries.}
 \end{table}
 
 Table~\ref{tab:execution} shows that B2 completed two more held-out runs than B1 and matched B0's render count. Mean test time per assigned brief was 4.25 seconds for B0, 7.12 for B1, and 67.05 for B2, measured after source preparation and including failed runs. The formal-study usage estimate was USD 0.335423 at the assumed peak uncached rates. The spend guard recorded a USD 2.031448 reservation. Actual provider billing is unconfirmed, and pilot and dialogue work are excluded from the estimate. The AI scoring pass made no paid endpoint calls.
 
 \begin{table}[htbp]
 \centering
-\caption{Held-out judgments. Strict outcomes use the five criteria jointly. Human bounds include unresolved cases at the upper bound. Stated usability reproduces the original human checkboxes.}
+\caption{Held-out human and AI judgments.}
 \label{tab:human-ai}
-\begin{tabular}{lccccc}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lccccc}
 \toprule
 System & Gao strict & Zhang strict & Human bounds & AI strict & Gao/Zhang usable \\
 \midrule
@@ -32,7 +37,8 @@ B0 & 0/4 & 0/4 & 0/4 & 0/4 & 0/4, 0/4 \\
 B1 & 1/4 & 1/4 & 1/4 & 0/4 & 2/4, 2/4 \\
 B2 & 3/4 & 1/4 & 1/4--3/4 & 1/4 & 4/4, 3/4 \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
+\tablenote{Strict outcomes use the five criteria jointly. Human bounds include unresolved cases at the upper bound. Stated usability reproduces the original human checkboxes.}
 \end{table}
 
 Table~\ref{tab:human-ai} reports semantic and editorial quality separately from rendering. Human strict agreement was 8/10 among the renders (Cohen's $\kappa=0.55$). AI agreed with Gao on 7/10 and with Zhang on 9/10. Several clips share the same source, so these are descriptive measures.
@@ -46,9 +52,9 @@ The first export retained the goal, formula entry and result. The first revision
 
 \begin{table}[htbp]
 \centering
-\caption{Supplementary test on the synthetic spreadsheet clip. The result hold is time measured from decoded frames. A dash denotes no export.}
+\caption{Supplementary spreadsheet interaction and recovery.}
 \label{tab:spreadsheet}
-\begin{tabular}{lrrr}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrr}
 \toprule
 Attempt & Output (s) & Result hold (s) & Model attempts \\
 \midrule
@@ -58,7 +64,8 @@ Attempt & Output (s) & Result hold (s) & Model attempts \\
 2 s clip with 5 s hold & --- & --- & 13 \\
 8 s recovery with 5 s hold & 8.04 & 5.00 & 15 \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
+\tablenote{Result hold is measured from decoded frames of the synthetic spreadsheet clip. A dash denotes no export.}
 \end{table}
 
 Table~\ref{tab:spreadsheet} records all five submissions. The backend explicitly flagged the two-second request as incompatible with a five-second hold and produced no export. When the user increased the requested duration to eight seconds, the system exported a vertical clip with B5 = 240 continuously visible from 3.033 to 8.033 s. These observations show that the system retained the visual evidence and recovered after the user relaxed a conflicting constraint.

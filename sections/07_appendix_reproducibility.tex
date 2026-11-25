@@ -3,9 +3,9 @@
 
 \begin{table}[htbp]
 \centering
-\caption{The twelve held-out system--brief pairs. Failed executions remain in the overall counts.}
+\caption{Item-level outcomes for the twelve held-out system--brief pairs.}
 \label{tab:cases}
-\begin{tabular}{llccccc}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}llccccc}
 \toprule
 Clip & System & Rendered & Gao strict & Zhang strict & AI strict & Human result \\
 \midrule
@@ -22,7 +22,8 @@ Clip & System & Rendered & Gao strict & Zhang strict & AI strict & Human result 
 11 & B2 & Yes & Pass & Fail & Fail & Disputed \\
 12 & B1 & No & Fail & Fail & Fail & Fail \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
+\tablenote{Failed executions remain in the overall counts.}
 \end{table}
 
 \paragraph{Trace pointers.}

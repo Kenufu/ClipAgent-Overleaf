@@ -13,6 +13,11 @@
 \usepackage{graphicx}
 \usepackage{placeins}
 \definecolor{diagramcream}{RGB}{247,244,233}
+% Short table titles above; explanatory notes below, aligned to the table width.
+\newcommand{\tablenote}[1]{%
+  \par\vspace{4pt}\noindent
+  \begin{minipage}{\linewidth}\small\raggedright\textit{Note.} #1\end{minipage}%
+}
 
 \title{[Group 59] ClipAgent: Evidence-Grounded\\
 Video Editing with Stateful Planning\\
